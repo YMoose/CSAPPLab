@@ -76,12 +76,12 @@ int main(int argc, char** argv)
 			unsigned int size = 0;
 			int LRUline = Eline;
 			analyseline(buf,&op,&addr,&size);
+			if(op == 'I') continue;
 			printf("%c %lx,%d",op,addr,size);
 			LRUline = cachesearch(&cachesets[(addr&smask)>>bbit], Eline, addr&tagmask);
 			if(LRUline == -1){
 				hits++;
 				printf(" hit");
-
 			}
 			else{
 				misses++;
@@ -100,27 +100,27 @@ int main(int argc, char** argv)
 	}
 	else{
 		while(mygetline(tracefile,buf)){
-			char op = 0;
-			long addr = 0;
-			unsigned int size = 0;
-			int LRUline = Eline;
-			analyseline(buf,&op,&addr,&size);
-			LRUline = cachesearch(&cachesets[addr&smask], Eline, addr&tagmask);
-			if(LRUline == -1){
-				hits++;
-			}
-			else{
-				misses++;
-				if(cacheload(&cachesets[addr&smask],addr&tagmask,LRUline)){
-					evictions++;
+		 			char op = 0;
+					long addr = 0;
+					unsigned int size = 0;
+					int LRUline = Eline;
+					analyseline(buf,&op,&addr,&size);
+					if(op == 'I') continue;
+					LRUline = cachesearch(&cachesets[(addr&smask)>>bbit], Eline, addr&tagmask);
+					if(LRUline == -1){
+						hits++;
+					}
+					else{
+						misses++;
+						if(cacheload(&(cachesets[(addr&smask)>>bbit]),addr&tagmask,LRUline)){
+							evictions++;
+						}
+					}
+					if(op == 'M'){
+						hits++;
+					}
 				}
-				if(op == 'M'){
-					hits++;
-				}
-			}
-		}
 	}
-
     printSummary(hits, misses, evictions);
     return 0;
 }
